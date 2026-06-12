@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "PoolCare",
+    "slug": "poolcare",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "poolcare",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.poolcare.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "PoolCare utilise l'appareil photo pour analyser la couleur de l'eau et les bandelettes de test.",
+        "NSPhotoLibraryUsageDescription": "PoolCare accède à vos photos pour analyser une image existante de votre piscine ou d'une bandelette."
+      }
+    },
+    "android": {
+      "package": "com.poolcare.app",
+      "permissions": ["CAMERA", "POST_NOTIFICATIONS"],
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "PoolCare utilise l'appareil photo pour analyser la couleur de l'eau et les bandelettes de test."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PoolCare accède à vos photos pour analyser une image existante."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#0a7ea4"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
