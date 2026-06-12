@@ -10,9 +10,31 @@ import { colors, radius, spacing } from '@/theme';
 export default function AnalyseHub() {
   const router = useRouter();
   const analyses = useAppStore((s) => s.analyses);
+  const pool = useAppStore((s) => s.pool);
+
+  // Avec un photomètre, des gouttes ou une sonde, la saisie manuelle est la
+  // lecture la plus fiable : on la met en avant.
+  const manualFirst = !!pool && pool.analyzer !== 'bandelette';
+
+  const manualCard = (
+    <Pressable style={[styles.bigCard, manualFirst && styles.recommended]} onPress={() => router.push('/analyse/manuelle')}>
+      <Ionicons name="create" size={36} color={colors.primary} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.bigTitle}>
+          Saisie manuelle {manualFirst ? ' · recommandé' : ''}
+        </Text>
+        <Text style={styles.muted}>
+          Reportez les valeurs de votre {pool && pool.analyzer !== 'bandelette' ? 'analyseur' : 'photomètre, trousse ou sonde'} : plan d'action avec dosages précis.
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
+    </Pressable>
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {manualFirst && manualCard}
+
       <Pressable style={styles.bigCard} onPress={() => router.push('/analyse/eau')}>
         <Ionicons name="water" size={36} color={colors.primary} />
         <View style={{ flex: 1 }}>
@@ -35,6 +57,8 @@ export default function AnalyseHub() {
         <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
       </Pressable>
 
+      {!manualFirst && manualCard}
+
       <SectionTitle>Historique</SectionTitle>
       {analyses.length === 0 ? (
         <Card>
@@ -46,7 +70,7 @@ export default function AnalyseHub() {
             <View style={styles.rowBetween}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.cardTitle}>
-                  {a.type === 'eau' ? '💧' : '🧪'} {a.summary}
+                  {a.type === 'eau' ? '💧' : a.type === 'bandelette' ? '🧪' : '📋'} {a.summary}
                 </Text>
                 <Text style={styles.muted}>{formatDate(a.date)}</Text>
               </View>
@@ -87,6 +111,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: colors.text,
+  },
+  recommended: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
   },
   muted: {
     color: colors.textMuted,

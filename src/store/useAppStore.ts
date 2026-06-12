@@ -2,12 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { cancelReminder, scheduleRoutineReminder } from '@/lib/notifications';
+import { PoolProfile } from '@/lib/treatment';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface AnalysisRecord {
   id: string;
-  type: 'eau' | 'bandelette';
+  type: 'eau' | 'bandelette' | 'manuelle';
   date: number;
   /** Résumé court affiché dans l'historique */
   summary: string;
@@ -51,6 +52,7 @@ export interface Order {
 
 interface AppState {
   seeded: boolean;
+  pool: PoolProfile | null;
   analyses: AnalysisRecord[];
   routines: Routine[];
   stock: StockItem[];
@@ -58,6 +60,7 @@ interface AppState {
   orders: Order[];
 
   seedIfNeeded: () => void;
+  setPool: (profile: PoolProfile) => void;
   addAnalysis: (record: Omit<AnalysisRecord, 'id' | 'date'>) => void;
 
   addRoutine: (name: string, emoji: string, frequencyDays: number) => Promise<void>;
@@ -96,6 +99,7 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       seeded: false,
+      pool: null,
       analyses: [],
       routines: [],
       stock: [],
@@ -117,6 +121,8 @@ export const useAppStore = create<AppState>()(
           stock: DEFAULT_STOCK.map((s) => ({ ...s, id: makeId() })),
         });
       },
+
+      setPool: (profile) => set({ pool: profile }),
 
       addAnalysis: (record) =>
         set((state) => ({

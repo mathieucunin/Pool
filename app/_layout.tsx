@@ -27,6 +27,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="analyse/eau" options={{ title: "Couleur de l'eau" }} />
         <Stack.Screen name="analyse/bandelette" options={{ title: 'Bandelette de test' }} />
+        <Stack.Screen name="analyse/manuelle" options={{ title: 'Saisie des mesures' }} />
+        <Stack.Screen name="piscine" options={{ title: 'Ma piscine' }} />
         <Stack.Screen name="routine/nouvelle" options={{ title: 'Nouvelle routine', presentation: 'modal' }} />
         <Stack.Screen name="boutique" options={{ title: 'Boutique' }} />
       </Stack>

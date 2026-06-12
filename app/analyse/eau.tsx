@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ActionPlanView } from '@/components/ActionPlanView';
 import { PhotoAnalyzer } from '@/components/PhotoAnalyzer';
 import { Badge, Button, Card } from '@/components/ui';
+import { buildActionPlan } from '@/lib/treatment';
 import { analyzeWater, WaterResult } from '@/lib/waterAnalysis';
 import { useAppStore } from '@/store/useAppStore';
 import { colors, radius, spacing } from '@/theme';
@@ -10,6 +12,7 @@ import { colors, radius, spacing } from '@/theme';
 export default function AnalyseEau() {
   const router = useRouter();
   const addAnalysis = useAppStore((s) => s.addAnalysis);
+  const pool = useAppStore((s) => s.pool);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<WaterResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,13 +29,17 @@ export default function AnalyseEau() {
     }
   };
 
+  // Avec un profil piscine, le moteur de traitement fournit un plan priorisé
+  // et dosé ; sinon on retombe sur les actions génériques du diagnostic.
+  const plan = result && result.status !== 'claire' ? buildActionPlan({}, pool, result.status) : null;
+
   const save = () => {
     if (!result) return;
     addAnalysis({
       type: 'eau',
       summary: result.title,
       severity: result.severity,
-      details: result.actions,
+      details: plan && pool ? plan.steps.map((s, i) => `${i + 1}. ${s.title}`) : result.actions,
     });
     router.back();
   };
@@ -60,14 +67,28 @@ export default function AnalyseEau() {
           <Text style={styles.description}>{result.description}</Text>
         </Card>
 
-        <Card style={{ marginTop: spacing.m }}>
-          <Text style={styles.subtitle}>Actions recommandées</Text>
-          {result.actions.map((action, i) => (
-            <Text key={i} style={styles.action}>
-              {i + 1}. {action}
-            </Text>
-          ))}
-        </Card>
+        {plan && pool ? (
+          <View style={{ marginTop: spacing.m }}>
+            <ActionPlanView plan={plan} />
+          </View>
+        ) : (
+          <Card style={{ marginTop: spacing.m }}>
+            <Text style={styles.subtitle}>Actions recommandées</Text>
+            {result.actions.map((action, i) => (
+              <Text key={i} style={styles.action}>
+                {i + 1}. {action}
+              </Text>
+            ))}
+            {!pool && (
+              <Button
+                title="⚙️ Configurer ma piscine pour des dosages précis"
+                variant="secondary"
+                onPress={() => router.push('/piscine')}
+                style={{ marginTop: spacing.s }}
+              />
+            )}
+          </Card>
+        )}
 
         <Text style={styles.disclaimer}>
           ⚠️ Estimation basée sur la couleur de la photo : la lumière et les reflets peuvent fausser

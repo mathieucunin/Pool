@@ -5,6 +5,21 @@ Application mobile **iOS & Android** d'aide à l'entretien de piscine, construit
 
 ## Fonctionnalités
 
+- **Profil piscine** ⚙️ — type de bassin (enterrée, hors-sol, spa), volume calculé d'après la
+  forme et les dimensions (modifiable), type de filtration, mode de désinfection (chlore,
+  électrolyse au sel, brome, oxygène actif) et **type d'analyseur d'eau** (bandelettes,
+  photomètre, trousse à gouttes, sonde connectée).
+- **Moteur de plan d'action** 🧠 (`src/lib/treatment.ts`) — à partir des mesures et du profil,
+  génère un plan **priorisé dans l'ordre chimique correct** (stabilisant bloquant → TAC → pH →
+  désinfectant → rattrapage algues/clarification → confort) avec **dosages calculés sur le
+  volume du bassin** (pH±, TAC+, chlore choc, stabilisant, sel, anti-algues…), consignes
+  d'attente entre étapes, et recommandations adaptées : plages de pH spécifiques à
+  l'électrolyse, pas de floculant sur filtre à cartouche/diatomées, pas de stabilisant au brome,
+  séquestrant avant chloration sur eau ferrugineuse, etc. Chaque étape propose le produit
+  correspondant à ajouter au panier.
+- **Saisie manuelle des mesures** 📋 — pour les photomètres, trousses à gouttes et sondes
+  (mise en avant automatiquement selon l'analyseur configuré) : c'est la lecture la plus fiable.
+
 - **Analyse de la couleur de l'eau par photo** 📷 — photographiez la surface de l'eau :
   l'app mesure la couleur moyenne (teinte/saturation) et pose un diagnostic
   (eau claire, trouble, laiteuse, verte/algues, brune/métaux) avec les actions recommandées.
@@ -41,12 +56,15 @@ app/                     Écrans (expo-router, file-based routing)
   (tabs)/                Onglets : Accueil, Analyse, Routines, Stock
   analyse/eau.tsx        Capture + diagnostic couleur de l'eau
   analyse/bandelette.tsx Capture guidée + lecture bandelette
+  analyse/manuelle.tsx   Saisie des mesures (photomètre, gouttes, sonde)
+  piscine.tsx            Profil du bassin (volume, filtration, désinfection, analyseur)
   routine/nouvelle.tsx   Création de routine (modèles ou personnalisée)
   boutique.tsx           Catalogue, panier, commandes
 src/
   lib/imagePixels.ts     Décodage JPEG → pixels, couleur moyenne, HSV, distance couleur
   lib/waterAnalysis.ts   Classification de l'eau + diagnostics/actions
   lib/stripAnalysis.ts   Référentiel colorimétrique 5-en-1 + lecture des pads
+  lib/treatment.ts       Moteur de plan d'action priorisé et dosé selon le profil
   lib/notifications.ts   Rappels locaux (expo-notifications)
   store/useAppStore.ts   État global persisté (zustand + AsyncStorage)
   data/products.ts       Catalogue boutique

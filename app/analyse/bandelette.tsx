@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ActionPlanView } from '@/components/ActionPlanView';
 import { PhotoAnalyzer } from '@/components/PhotoAnalyzer';
-import { Badge, Button, Card } from '@/components/ui';
+import { Badge, Button, Card, SectionTitle } from '@/components/ui';
 import { analyzeStrip, PAD_CENTERS, STRIP_PARAMETERS, StripResult } from '@/lib/stripAnalysis';
+import { buildActionPlan, Measurements } from '@/lib/treatment';
 import { useAppStore } from '@/store/useAppStore';
 import { colors, radius, spacing } from '@/theme';
 
@@ -20,9 +22,23 @@ function StripOverlay() {
   );
 }
 
+/** Convertit les pads lus en mesures pour le moteur de traitement. */
+function toMeasurements(result: StripResult): Measurements {
+  const m: Measurements = {};
+  for (const pad of result.pads) {
+    if (pad.parameter.key === 'hardness') m.hardness = pad.value;
+    else if (pad.parameter.key === 'chlorine') m.chlorine = pad.value;
+    else if (pad.parameter.key === 'ph') m.ph = pad.value;
+    else if (pad.parameter.key === 'alkalinity') m.alkalinity = pad.value;
+    else if (pad.parameter.key === 'cya') m.cya = pad.value;
+  }
+  return m;
+}
+
 export default function AnalyseBandelette() {
   const router = useRouter();
   const addAnalysis = useAppStore((s) => s.addAnalysis);
+  const pool = useAppStore((s) => s.pool);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<StripResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +73,8 @@ export default function AnalyseBandelette() {
     router.back();
   };
 
+  const plan = result ? buildActionPlan(toMeasurements(result), pool) : null;
+
   if (result) {
     return (
       <ScrollView contentContainerStyle={styles.resultContainer}>
@@ -90,9 +108,17 @@ export default function AnalyseBandelette() {
                 />
               </View>
             </View>
-            {pad.advice && <Text style={styles.advice}>💡 {pad.advice}</Text>}
+            {/* Sans profil piscine, on garde le conseil générique ; sinon le plan ci-dessous fait foi */}
+            {pad.advice && !pool && <Text style={styles.advice}>💡 {pad.advice}</Text>}
           </Card>
         ))}
+
+        {plan && (
+          <>
+            <SectionTitle>Plan d'action</SectionTitle>
+            <ActionPlanView plan={plan} />
+          </>
+        )}
 
         <Text style={styles.disclaimer}>
           ⚠️ Lecture estimée à partir des couleurs de la photo. L'éclairage et la marque de
