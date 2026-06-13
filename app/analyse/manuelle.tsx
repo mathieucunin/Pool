@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { ActionPlanView } from '@/components/ActionPlanView';
+import { PhotoAnalyzer } from '@/components/PhotoAnalyzer';
+import { StripGuideOverlay } from '@/components/StripGuideOverlay';
 import { Button, SectionTitle } from '@/components/ui';
+import { analyzeStrip } from '@/lib/stripAnalysis';
 import { ActionPlan, buildActionPlan, Measurements, idealRanges } from '@/lib/treatment';
 import { useAppStore } from '@/store/useAppStore';
 import { colors, radius, spacing } from '@/theme';
@@ -25,6 +28,9 @@ export default function SaisieManuelle() {
   const addAnalysis = useAppStore((s) => s.addAnalysis);
   const [values, setValues] = useState<Record<string, string>>({});
   const [plan, setPlan] = useState<ActionPlan | null>(null);
+  const [capturing, setCapturing] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [photoNote, setPhotoNote] = useState<string | null>(null);
 
   const sanitizer = pool?.sanitizer ?? 'chlore';
   const ranges = idealRanges(sanitizer);
@@ -55,6 +61,28 @@ export default function SaisieManuelle() {
 
   const generate = () => setPlan(buildActionPlan(measurements, pool));
 
+  // Pré-remplissage par photo : la lecture de la bandelette renseigne les champs,
+  // que l'utilisateur peut ensuite corriger à la main avant de générer le plan.
+  const fillFromPhoto = async (uri: string) => {
+    setAnalyzing(true);
+    setPhotoNote(null);
+    try {
+      const result = await analyzeStrip(uri);
+      const filled: Record<string, string> = {};
+      for (const pad of result.pads) {
+        filled[pad.parameter.key] = String(pad.value).replace('.', ',');
+      }
+      setValues((prev) => ({ ...prev, ...filled }));
+      setPlan(null);
+      setCapturing(false);
+      setPhotoNote('Valeurs pré-remplies depuis la photo — vérifiez et corrigez si besoin avant de générer le plan.');
+    } catch {
+      setPhotoNote('La lecture de la bandelette a échoué. Réessayez ou saisissez les valeurs à la main.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const save = () => {
     if (!plan) return;
     addAnalysis({
@@ -71,6 +99,18 @@ export default function SaisieManuelle() {
     router.back();
   };
 
+  if (capturing) {
+    return (
+      <PhotoAnalyzer
+        instruction="Bandelette verticale, chaque pastille dans son cadre (Dureté en haut). Les valeurs lues rempliront le formulaire, modifiable ensuite."
+        overlay={<StripGuideOverlay />}
+        analyzing={analyzing}
+        onPhoto={fillFromPhoto}
+        onCancel={() => setCapturing(false)}
+      />
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {!pool && (
@@ -80,9 +120,16 @@ export default function SaisieManuelle() {
         </Text>
       )}
       <Text style={styles.intro}>
-        Reportez les valeurs lues sur votre {pool ? 'analyseur' : 'photomètre, trousse à gouttes ou sonde'}.
+        Saisissez vos mesures à la main, ou pré-remplissez-les par photo de bandelette.
         Laissez vide ce que vous n'avez pas mesuré.
       </Text>
+
+      <Button
+        title="📷 Pré-remplir par photo de bandelette"
+        variant="secondary"
+        onPress={() => setCapturing(true)}
+      />
+      {photoNote && <Text style={styles.photoNote}>{photoNote}</Text>}
 
       {fields.map((f) => (
         <View key={f.key}>
@@ -141,6 +188,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     marginBottom: spacing.s,
+  },
+  photoNote: {
+    color: colors.primary,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: spacing.s,
   },
   label: {
     fontSize: 14,

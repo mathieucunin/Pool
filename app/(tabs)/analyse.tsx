@@ -21,10 +21,10 @@ export default function AnalyseHub() {
       <Ionicons name="create" size={36} color={colors.primary} />
       <View style={{ flex: 1 }}>
         <Text style={styles.bigTitle}>
-          Saisie manuelle {manualFirst ? ' · recommandé' : ''}
+          Saisie des mesures{manualFirst ? ' · recommandé' : ''}
         </Text>
         <Text style={styles.muted}>
-          Reportez les valeurs de votre {pool && pool.analyzer !== 'bandelette' ? 'analyseur' : 'photomètre, trousse ou sonde'} : plan d'action avec dosages précis.
+          À la main ou pré-remplie par photo de bandelette, puis plan d'action avec dosages précis.
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />

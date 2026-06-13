@@ -14,12 +14,15 @@ export function PhotoAnalyzer({
   overlay,
   analyzing,
   onPhoto,
+  onCancel,
 }: {
   instruction: string;
   /** Superposition de cadrage (guide bandelette, etc.) */
   overlay?: React.ReactNode;
   analyzing: boolean;
   onPhoto: (uri: string) => void;
+  /** Si fourni, affiche un bouton « Annuler » (utile en mode pré-remplissage) */
+  onCancel?: () => void;
 }) {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
@@ -84,6 +87,12 @@ export function PhotoAnalyzer({
         <Button title="📸  Prendre la photo" onPress={takePhoto} loading={capturing || analyzing} />
         <View style={{ height: spacing.s }} />
         <Button title="Importer depuis la galerie" variant="secondary" onPress={pickFromGallery} />
+        {onCancel && (
+          <>
+            <View style={{ height: spacing.s }} />
+            <Button title="Annuler" variant="secondary" onPress={onCancel} />
+          </>
+        )}
       </View>
     </View>
   );

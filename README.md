@@ -17,8 +17,10 @@ Application mobile **iOS & Android** d'aide à l'entretien de piscine, construit
   l'électrolyse, pas de floculant sur filtre à cartouche/diatomées, pas de stabilisant au brome,
   séquestrant avant chloration sur eau ferrugineuse, etc. Chaque étape propose le produit
   correspondant à ajouter au panier.
-- **Saisie manuelle des mesures** 📋 — pour les photomètres, trousses à gouttes et sondes
-  (mise en avant automatiquement selon l'analyseur configuré) : c'est la lecture la plus fiable.
+- **Saisie des mesures (manuel ou photo)** 📋 — saisissez les valeurs à la main (photomètre,
+  trousse à gouttes, sonde — mis en avant automatiquement selon l'analyseur configuré) **ou**
+  pré-remplissez-les par photo de bandelette : la lecture colorimétrique renseigne les champs,
+  que vous pouvez corriger avant de générer le plan.
 
 - **Analyse de la couleur de l'eau par photo** 📷 — photographiez la surface de l'eau :
   l'app mesure la couleur moyenne (teinte/saturation) et pose un diagnostic

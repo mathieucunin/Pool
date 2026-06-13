@@ -3,24 +3,12 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ActionPlanView } from '@/components/ActionPlanView';
 import { PhotoAnalyzer } from '@/components/PhotoAnalyzer';
+import { StripGuideOverlay } from '@/components/StripGuideOverlay';
 import { Badge, Button, Card, SectionTitle } from '@/components/ui';
-import { analyzeStrip, PAD_CENTERS, STRIP_PARAMETERS, StripResult } from '@/lib/stripAnalysis';
+import { analyzeStrip, StripResult } from '@/lib/stripAnalysis';
 import { buildActionPlan, Measurements } from '@/lib/treatment';
 import { useAppStore } from '@/store/useAppStore';
 import { colors, radius, spacing } from '@/theme';
-
-/** Guide de cadrage : un rectangle par pad, aligné sur les zones analysées. */
-function StripOverlay() {
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      {PAD_CENTERS.map((cy, i) => (
-        <View key={i} style={[styles.padGuide, { top: `${(cy - 0.045) * 100}%` as const }]}>
-          <Text style={styles.padLabel}>{STRIP_PARAMETERS[i].name}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
 
 /** Convertit les pads lus en mesures pour le moteur de traitement. */
 function toMeasurements(result: StripResult): Measurements {
@@ -137,7 +125,7 @@ export default function AnalyseBandelette() {
       {error && <Text style={styles.error}>{error}</Text>}
       <PhotoAnalyzer
         instruction="Tenez la bandelette verticalement, chaque pastille alignée dans son cadre (Dureté en haut). Lumière naturelle, sans ombre."
-        overlay={<StripOverlay />}
+        overlay={<StripGuideOverlay />}
         analyzing={analyzing}
         onPhoto={handlePhoto}
       />
@@ -146,26 +134,6 @@ export default function AnalyseBandelette() {
 }
 
 const styles = StyleSheet.create({
-  padGuide: {
-    position: 'absolute',
-    left: '44%',
-    width: '12%',
-    height: '9%',
-    borderWidth: 2,
-    borderColor: '#fff',
-    borderRadius: 6,
-    justifyContent: 'center',
-  },
-  padLabel: {
-    position: 'absolute',
-    left: '120%',
-    width: 150,
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-    textShadowColor: 'rgba(0,0,0,0.8)',
-    textShadowRadius: 4,
-  },
   resultContainer: {
     padding: spacing.m,
     paddingBottom: spacing.xl,
