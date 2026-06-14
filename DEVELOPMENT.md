@@ -34,7 +34,14 @@ export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator
 
 Vérifie : `adb --version` doit répondre.
 
-> JDK : le JDK embarqué d'Android Studio suffit. Au besoin : `brew install --cask zulu@17`.
+> **JDK : il faut Java 17** (React Native/Expo ne supportent pas les JDK très récents).
+> Si `java -version` affiche autre chose que 17.x :
+> ```bash
+> brew install --cask zulu@17
+> echo 'export JAVA_HOME=$(/usr/libexec/java_home -v 17)' >> ~/.zshrc
+> source ~/.zshrc
+> java -version   # doit afficher 17.x
+> ```
 
 ## 2. Installer les dépendances du projet
 
@@ -89,6 +96,7 @@ npx expo run:ios        # build natif sur le simulateur iOS
 | Souci | Solution |
 |------|----------|
 | `adb` introuvable | Vérifie `ANDROID_HOME` et `source ~/.zshrc` |
+| `Unsupported class file major version` (build Gradle) | Mauvaise version de Java : installe JDK 17 et règle `JAVA_HOME` (voir section Prérequis) |
 | `npm install` erreur de registre | N'arrive que dans le sandbox cloud ; en local, ça fonctionne |
 | Émulateur lent | Active l'accélération matérielle, ou teste sur un vrai téléphone |
 | Cache Metro corrompu | `npx expo start -c` |
